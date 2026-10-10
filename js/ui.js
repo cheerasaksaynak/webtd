@@ -90,6 +90,11 @@ function buildTowerButtons(){
   refreshTowerButtons();
 }
 function refreshTowerButtons(){
+  const upBtn = document.getElementById('btn-upgrade');
+  if(upBtn && state.selectedTower){
+    const t = state.selectedTower;
+    upBtn.disabled = t.level>=MAX_TOWER_LEVEL || state.gold < upgradeCost(t);
+  }
   [...towerButtonsEl.children].forEach(btn=>{
     const key = btn.dataset.key;
     btn.classList.toggle('selected', state.selectedBuildType===key);
@@ -105,20 +110,15 @@ function closeTowerModal(){
   renderTowerModal();
 }
 
-// Upgrade / sell dialog. The game is paused while it is open.
+// Upgrade / sell dialog. The game keeps running while it is open.
 function renderTowerModal(){
   const tower = state.selectedTower;
   if(!tower){
     towerModalEl.classList.add('hidden');
     upgradePanelEl.innerHTML = '';
-    if(state.modalPaused){ state.paused = false; state.modalPaused = false; }
     return;
   }
-  if(towerModalEl.classList.contains('hidden')){
-    towerModalEl.classList.remove('hidden');
-    state.modalPaused = !state.paused;
-    state.paused = true;
-  }
+  towerModalEl.classList.remove('hidden');
   const type = TOWER_TYPES[tower.type];
   const maxed = tower.level>=MAX_TOWER_LEVEL;
   const cost = upgradeCost(tower);
