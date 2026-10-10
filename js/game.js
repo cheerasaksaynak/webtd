@@ -8,7 +8,7 @@ const state = {
   gold:0, lives:0, startLives:20,
   towers:[], enemies:[], projectiles:[], particles:[],
   waveIndex:-1, waveQueue:[], waveClockMs:0, waveActive:false,
-  betweenWaveTimer:0, BETWEEN_WAVE_MS:9000, time:0,
+  betweenWaveTimer:0, BETWEEN_WAVE_MS:9000, time:0, modalPaused:false,
   selectedBuildType:null, selectedTower:null, hoverPos:null,
   paused:false, speedMult:1, soundOn:true,
   gameOver:false, levelWon:false, lastTime:0,

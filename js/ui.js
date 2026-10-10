@@ -63,8 +63,8 @@ canvas.addEventListener('click', (evt)=>{
     }
     return;
   }
-  if(clickedTower){ state.selectedTower = clickedTower; renderUpgradePanel(); }
-  else { state.selectedTower = null; renderUpgradePanel(); }
+  if(clickedTower){ state.selectedTower = clickedTower; renderTowerModal(); }
+  else { closeTowerModal(); }
 });
 
 /* ============================================================
@@ -83,7 +83,6 @@ function buildTowerButtons(){
     btn.addEventListener('click', ()=>{
       state.selectedBuildType = (state.selectedBuildType===key) ? null : key;
       state.selectedTower = null;
-      renderUpgradePanel();
       refreshTowerButtons();
     });
     towerButtonsEl.appendChild(btn);
@@ -99,27 +98,63 @@ function refreshTowerButtons(){
 }
 
 const upgradePanelEl = document.getElementById('upgrade-panel');
-function renderUpgradePanel(){
+const towerModalEl = document.getElementById('tower-modal');
+
+function closeTowerModal(){
+  state.selectedTower = null;
+  renderTowerModal();
+}
+
+// Upgrade / sell dialog. The game is paused while it is open.
+function renderTowerModal(){
   const tower = state.selectedTower;
-  if(!tower){ upgradePanelEl.classList.add('hidden'); upgradePanelEl.innerHTML=''; return; }
-  upgradePanelEl.classList.remove('hidden');
+  if(!tower){
+    towerModalEl.classList.add('hidden');
+    upgradePanelEl.innerHTML = '';
+    if(state.modalPaused){ state.paused = false; state.modalPaused = false; }
+    return;
+  }
+  if(towerModalEl.classList.contains('hidden')){
+    towerModalEl.classList.remove('hidden');
+    state.modalPaused = !state.paused;
+    state.paused = true;
+  }
   const type = TOWER_TYPES[tower.type];
   const maxed = tower.level>=MAX_TOWER_LEVEL;
   const cost = upgradeCost(tower);
   const refund = Math.round(towerTotalSpent(tower)*0.7);
+  const next = { type:tower.type, level:tower.level+1 };
+  const stat = (label, key, fmt) => {
+    const now = fmt(towerStat(tower,key));
+    const nxt = maxed ? '' : fmt(towerStat(next,key));
+    return `<div class="row"><span>${label}</span><span>${now}${nxt && nxt!==now ? ` <i>→ ${nxt}</i>` : ''}</span></div>`;
+  };
   upgradePanelEl.innerHTML = `
-    <div style="text-align:center;font-weight:bold;">${type.emoji} ${type.name} · เลเวล ${tower.level}</div>
-    <div class="row"><span>⚔️ ดาเมจ</span><span>${towerStat(tower,'dmg').toFixed(0)}</span></div>
-    <div class="row"><span>🎯 ระยะ</span><span>${towerStat(tower,'range').toFixed(0)}</span></div>
-    <div class="row"><span>⏱️ อัตรายิง</span><span>${(towerStat(tower,'rate')/1000).toFixed(2)}s</span></div>
+    <button class="tm-close" id="tm-close" title="ปิด">✕</button>
+    <div class="tm-head">
+      <span class="tm-icon"><canvas></canvas></span>
+      <div>
+        <div class="tm-name">${type.name}</div>
+        <div class="tm-level">เลเวล ${tower.level}/${MAX_TOWER_LEVEL} ${'⭐'.repeat(tower.level)}</div>
+      </div>
+    </div>
+    <div class="tm-desc">${type.desc}</div>
+    ${stat('⚔️ ดาเมจ','dmg',v=>v.toFixed(0))}
+    ${stat('🎯 ระยะ','range',v=>v.toFixed(0))}
+    ${stat('⏱️ อัตรายิง','rate',v=>(v/1000).toFixed(2)+'s')}
     <div class="btn-row">
-      <button class="small" id="btn-upgrade" ${maxed||state.gold<cost?'disabled':''}>${maxed?'⭐ สูงสุด':'⬆️ อัพ 🪙'+cost}</button>
-      <button class="small danger" id="btn-sell">💰 ขาย 🪙${refund}</button>
+      <button id="btn-upgrade" ${maxed||state.gold<cost?'disabled':''}>${maxed?'⭐ สูงสุด':'⬆️ อัพเกรด 🪙'+cost}</button>
+      <button class="danger" id="btn-sell">💰 ขาย 🪙${refund}</button>
     </div>
   `;
-  document.getElementById('btn-upgrade')?.addEventListener('click', ()=>{ upgradeTower(tower); renderUpgradePanel(); });
-  document.getElementById('btn-sell')?.addEventListener('click', ()=>{ sellTower(tower); renderUpgradePanel(); });
+  renderWarriorIcon(upgradePanelEl.querySelector('canvas'), tower.type);
+  document.getElementById('tm-close').addEventListener('click', closeTowerModal);
+  document.getElementById('btn-upgrade').addEventListener('click', ()=>{ upgradeTower(tower); renderTowerModal(); });
+  document.getElementById('btn-sell').addEventListener('click', ()=>{ sellTower(tower); renderTowerModal(); });
 }
+
+towerModalEl.addEventListener('click', (evt)=>{ if(evt.target===towerModalEl) closeTowerModal(); });
+document.addEventListener('keydown', (evt)=>{ if(evt.key==='Escape' && state.selectedTower) closeTowerModal(); });
 
 /* ============================================================
    HUD
@@ -211,7 +246,7 @@ function openLevel(level){
   resetStateForLevel(level);
   buildDecor(level);
   buildTowerButtons();
-  renderUpgradePanel();
+  closeTowerModal();
   applyPageTheme(state.theme);
   showScreen(screenGame);
   updateHUD();

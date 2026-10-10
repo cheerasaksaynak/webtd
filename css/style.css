@@ -99,9 +99,21 @@ canvas{ display:block; background:#9ad878; }
 .tower-btn .info small{ font-size:11px; color:#8a6a3c; }
 .tower-btn.selected{ outline:3px solid #ff8a3d; }
 
-#upgrade-panel{ background:#fff4df; border-radius:14px; padding:10px; display:flex; flex-direction:column; gap:6px; }
-#upgrade-panel .row{ display:flex; justify-content:space-between; font-size:13px; }
-#upgrade-panel .btn-row{ display:flex; gap:6px; margin-top:4px; }
+/* ---------- Tower upgrade / sell modal ---------- */
+#tower-modal{
+  position:fixed; inset:0; background:rgba(0,0,0,.35); display:flex; align-items:center; justify-content:center; z-index:40;
+}
+.tower-card{ position:relative; width:310px; padding:22px 24px 24px; text-align:left; border-radius:24px; box-shadow:0 10px 0 #e8d3ab,0 18px 30px rgba(0,0,0,.35); }
+.tower-card .tm-close{ position:absolute; top:10px; right:12px; padding:2px 9px; font-size:14px; border-radius:10px; box-shadow:0 2px 0 #c99a3f; }
+.tm-head{ display:flex; align-items:center; gap:12px; margin-bottom:6px; }
+.tm-icon canvas{ display:block; width:60px; height:72px; background:none; }
+.tm-name{ font-size:20px; font-weight:bold; }
+.tm-level{ font-size:13px; color:#8a6a3c; }
+.tm-desc{ font-size:12px; color:#8a6a3c; margin-bottom:10px; }
+.tower-card .row{ display:flex; justify-content:space-between; font-size:15px; padding:5px 0; border-bottom:1px dashed #e8d3ab; }
+.tower-card .row i{ font-style:normal; color:#2e9b4f; font-weight:bold; }
+.tower-card .btn-row{ display:flex; gap:10px; margin-top:16px; }
+.tower-card .btn-row button{ flex:1; }
 #wave-info{ font-size:13px; background:#fff4df; border-radius:14px; padding:8px 10px; text-align:center; }
 
 /* ---------- Overlay modals ---------- */
